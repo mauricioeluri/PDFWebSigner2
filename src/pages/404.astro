@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout
+  title="Página não encontrada — PDFWebSigner"
+  description="A página solicitada não foi encontrada no PDFWebSigner."
+>
+  <main class="not-found">
+    <section aria-labelledby="not-found-title">
+      <p class="code">404</p>
+      <h1 id="not-found-title">Página não encontrada</h1>
+      <p class="message">
+        Confira o endereço ou <a href="/">volte ao posicionador.</a>
+      </p>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .not-found {
+    color-scheme: light dark;
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    text-align: center;
+  }
+
+  section {
+    max-width: 400px;
+  }
+
+  .code {
+    margin: 0 0 12px;
+    color: light-dark(#164c42, #9fe0cd);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  h1 {
+    margin: 0;
+    color: light-dark(#19242d, #eef2f5);
+    font-size: clamp(24px, 5vw, 32px);
+    letter-spacing: -0.035em;
+  }
+
+  .message {
+    margin: 10px 0 0;
+    color: light-dark(#586875, #a9b6c1);
+  }
+
+  a {
+    color: light-dark(#164c42, #9fe0cd);
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  a:focus-visible {
+    outline: 2px solid light-dark(#164c42, #9fe0cd);
+    outline-offset: 3px;
+  }
+</style>

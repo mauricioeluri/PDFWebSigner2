@@ -12,6 +12,7 @@
     ".astro": true,
     "dist": true,
     ".wrangler": true,
+    "wrangler.jsonc": true,
     "pnpm-lock.yaml": true,
     "pnpm-workspace.yaml": true
   }

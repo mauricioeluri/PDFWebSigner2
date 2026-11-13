@@ -1,5 +1,8 @@
 # build output
 dist/
+.wrangler/
+.dev.vars
+.dev.vars.*
 
 # archived version outside the new project
 /versao-1/
