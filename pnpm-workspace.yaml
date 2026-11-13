@@ -1,3 +1,6 @@
+packages:
+  - '.'
+
 minimumReleaseAgeExclude:
   - '@astrojs/markdown-satteri@0.4.9'
   - '@astrojs/runtime@0.1.1'
