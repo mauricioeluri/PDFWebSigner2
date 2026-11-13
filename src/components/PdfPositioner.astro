@@ -1,0 +1,665 @@
+<div id="pdf-design">
+  <header class="appbar">
+    <strong>PDFWebSigner</strong>
+  </header>
+  <section class="start" aria-label="Abrir PDF">
+    <div class="intro">
+      <h1>Posicione um campo de assinatura no PDF</h1>
+      <p>
+        Marque a área e copie as coordenadas ou um comando para o pyHanko.
+      </p>
+      <div class="open-options">
+        <span>Arraste um PDF para esta página ou</span>
+        <button class="primary open" type="button">Escolher PDF</button>
+      </div>
+      <input
+        class="file-input"
+        type="file"
+        accept="application/pdf,.pdf"
+        hidden
+      />
+    </div>
+  </section>
+  <p class="feedback" role="status" aria-live="polite" hidden></p>
+  <section class="editor" aria-label="Posicionador de campos de assinatura para pyHanko" hidden>
+    <div class="toolbar" role="group" aria-label="Controles do PDF">
+      <div class="pagination">
+        <div class="page-navigation">
+          <button
+            class="quiet prev"
+            aria-label="Página anterior"
+            type="button"
+            title="Página anterior"
+            disabled
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m5 15 7-7 7 7" />
+            </svg>
+          </button>
+          <button
+            class="quiet next"
+            aria-label="Próxima página"
+            type="button"
+            title="Próxima página"
+            disabled
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m5 9 7 7 7-7" />
+            </svg>
+          </button>
+          <input
+            class="page-number"
+            type="text"
+            inputmode="numeric"
+            value="1"
+            aria-label="Página atual"
+            title="Digite o número da página e pressione Enter"
+            autocomplete="off"
+            disabled
+          />
+          <span class="page-count">de —</span>
+        </div>
+        <label
+          class="pin-option"
+          title="Mantém a área de assinatura na última página, mesmo quando o número de páginas do PDF mudar."
+        >
+          <input class="pin-last" type="checkbox" /> Sempre na última página
+        </label>
+      </div>
+      <div class="zoom-controls" role="group" aria-label="Zoom">
+        <button
+          class="quiet zoom-out"
+          type="button"
+          aria-label="Diminuir zoom"
+          title="Diminuir zoom"
+          disabled
+        >
+          −
+        </button>
+        <button
+          class="quiet zoom-in"
+          type="button"
+          aria-label="Aumentar zoom"
+          title="Aumentar zoom"
+          disabled
+        >
+          +
+        </button>
+        <select class="zoom" aria-label="Zoom do PDF">
+          <option value="0">Ajustar largura</option>
+          <option value="0.5">50%</option>
+          <option value="0.75" selected>
+            75%
+          </option>
+          <option value="1">100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5">150%</option>
+          <option value="2">200%</option>
+          <option value="3">300%</option>
+        </select>
+      </div>
+      <div class="document-actions">
+        <span class="file" hidden></span>
+        <div class="export" role="group" aria-label="Ações da seleção" hidden>
+          <button
+            class="quiet selection-page"
+            type="button"
+            title="Ir à área de assinatura"
+            disabled
+          ></button>
+          <button class="quiet clear" type="button" disabled>
+            Limpar
+          </button>
+          <button
+            class="quiet copy-pos"
+            type="button"
+            title="Copiar coordenadas para uso no pyHanko"
+            disabled
+          >
+            Copiar coordenadas
+          </button>
+          <button
+            class="quiet copy-cmd"
+            type="button"
+            disabled
+            aria-label="Copiar comando pyHanko"
+            title="Copia um comando pyHanko que cria um campo vazio; não assina o PDF"
+          >
+            Comando pyHanko
+          </button>
+        </div>
+        <button
+          class="quiet close"
+          type="button"
+          aria-label="Fechar PDF"
+          title="Fechar PDF"
+          hidden
+        >
+          ×
+        </button>
+      </div>
+      <button
+        class="quiet more"
+        type="button"
+        popovertarget="editor-options"
+        aria-label="Mais opções"
+        title="Mais opções"
+      >
+        ⋯
+      </button>
+    </div>
+    <div id="editor-options" popover aria-label="Opções do PDF">
+      <label class="menu-zoom" hidden>
+        Zoom
+      </label>
+    </div>
+    <div
+      class="desk"
+      tabindex="0"
+      aria-label="Documento PDF com rolagem entre páginas"
+    >
+      <div class="sheet" hidden>
+        <canvas aria-label="Página do PDF"></canvas>
+        <div
+          class="selection-layer"
+          aria-label="Arraste ou dê um duplo clique para posicionar a área de assinatura"
+        >
+          <div class="mark" hidden>
+            <span>Campo de assinatura</span>
+            <span class="handle nw" data-corner="nw"></span>
+            <span class="handle ne" data-corner="ne"></span>
+            <span class="handle sw" data-corner="sw"></span>
+            <span class="handle se" data-corner="se"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+  import './pdf-positioner'
+</script>
+<style>
+  #pdf-design {
+    --surface: light-dark(#fff, #20252b);
+    --ink: light-dark(#19242d, #eef2f5);
+    --sub: light-dark(#586875, #a9b6c1);
+    --edge: light-dark(#dce3e7, #39444e);
+    --desk: light-dark(#eef1f3, #15191e);
+    --accent: light-dark(#164c42, #9fe0cd);
+    --inverse: light-dark(#fff, #112a24);
+    --paper: light-dark(#fff, #f5f4f0);
+    color-scheme: light dark;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    font:
+      14px/1.45 system-ui,
+      sans-serif;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  button {
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 7px;
+    font: inherit;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .primary {
+    background: var(--accent);
+    color: var(--inverse);
+  }
+  .primary:hover:enabled {
+    filter: brightness(1.12);
+  }
+  .quiet {
+    background: transparent;
+    color: var(--ink);
+  }
+  .quiet:hover:enabled {
+    background: var(--desk);
+  }
+  select {
+    padding: 6px;
+    border: 1px solid var(--edge);
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .appbar {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--edge);
+  }
+  .appbar strong {
+    font-size: 15px;
+  }
+  .start {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: min(65vh, 540px);
+    padding: 20px;
+    text-align: center;
+  }
+  .intro h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.035em;
+  }
+  .intro p {
+    margin: 8px 0 24px;
+    color: var(--sub);
+  }
+  .open-options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    color: var(--sub);
+  }
+  .open-options .open {
+    padding-inline: 18px;
+    font-weight: 600;
+  }
+  .start.is-dragging::after {
+    position: absolute;
+    inset: 12px;
+    display: grid;
+    place-items: center;
+    border: 2px dashed var(--accent);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: 600;
+    pointer-events: none;
+    content: 'Solte o PDF para abrir';
+  }
+  .feedback {
+    margin: 0;
+    padding: 0 16px 12px;
+    color: var(--sub);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+    user-select: text;
+  }
+
+  #pdf-design.is-open {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+  .is-open .appbar {
+    display: none;
+  }
+  .editor {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .desk {
+    flex: 1;
+    min-height: 0;
+    padding: 24px;
+    overflow: auto;
+    overflow-anchor: none;
+    overscroll-behavior: contain;
+    background: var(--desk);
+  }
+  .desk:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -3px;
+  }
+  .sheet {
+    position: relative;
+    margin: 0 auto 24px;
+    background: var(--paper);
+    color: #26323a;
+    box-shadow: 0 1px 8px #0002;
+    user-select: none;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .selection-layer {
+    position: absolute;
+    inset: 0;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .selection-layer[aria-disabled='true'] {
+    pointer-events: none;
+  }
+  .mark {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border: 1.5px solid #217960;
+    background: #4ba68728;
+    color: #165540;
+    font-size: 11px;
+    cursor: move;
+    touch-action: none;
+  }
+  .mark > span:first-child {
+    pointer-events: none;
+  }
+  .handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #217960;
+    border-radius: 3px;
+    background: transparent;
+    touch-action: none;
+  }
+  .nw {
+    left: -8px;
+    top: -8px;
+    cursor: nwse-resize;
+  }
+  .ne {
+    right: -8px;
+    top: -8px;
+    cursor: nesw-resize;
+  }
+  .sw {
+    left: -8px;
+    bottom: -8px;
+    cursor: nesw-resize;
+  }
+  .se {
+    right: -8px;
+    bottom: -8px;
+    cursor: nwse-resize;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    flex-shrink: 0;
+    gap: 12px;
+    min-height: 48px;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--edge);
+    background: var(--surface);
+  }
+  .pagination,
+  .page-navigation,
+  .zoom-controls,
+  .document-actions,
+  .export {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .page-navigation {
+    flex-shrink: 0;
+  }
+  .document-actions {
+    justify-self: end;
+  }
+  .toolbar button {
+    white-space: nowrap;
+  }
+  .toolbar .export {
+    padding-inline-end: 12px;
+    border-inline-end: 1px solid var(--edge);
+  }
+  .toolbar .export button {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+  .file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .close {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 2px 10px;
+    font-size: 22px;
+  }
+  .page-count {
+    margin-inline: 4px 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .page-navigation button,
+  .zoom-controls button {
+    width: 34px;
+    padding: 4px;
+    font-size: 20px;
+  }
+  .page-navigation button {
+    display: grid;
+    place-items: center;
+    height: 32px;
+    min-height: 32px;
+    border-radius: 0;
+  }
+  .prev {
+    margin-inline-end: 2px;
+    border-inline-end: 1px solid var(--edge);
+  }
+  .page-navigation svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .page-number {
+    width: 70px;
+    height: 32px;
+    margin-inline-start: 4px;
+    padding: 4px 10px;
+    border: 1px solid var(--sub);
+    border-radius: 9px;
+    background: var(--desk);
+    color: var(--ink);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .page-number:disabled {
+    opacity: 0.5;
+  }
+  .pin-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .toolbar .pin-option {
+    margin-inline: 8px;
+    padding-inline-start: 12px;
+    border-inline-start: 1px solid var(--edge);
+  }
+  .more {
+    display: none;
+  }
+
+  #editor-options {
+    position: fixed;
+    inset: 56px 8px auto auto;
+    width: min(280px, calc(100vw - 16px));
+    max-height: calc(100dvh - 72px);
+    margin: 0;
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid var(--edge);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 8px 28px #0004;
+  }
+  #editor-options .pin-option {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
+  #editor-options .export {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 8px 0;
+    border-block: 1px solid var(--edge);
+  }
+  #editor-options button {
+    min-height: 40px;
+    text-align: left;
+  }
+  #editor-options .close {
+    width: 100%;
+    margin: 4px 0 0;
+    font-size: 0;
+  }
+  #editor-options .close::after {
+    content: 'Fechar PDF';
+    font-size: 13px;
+  }
+  .menu-zoom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 4px 10px;
+    font-size: 13px;
+  }
+  #editor-options .selection-page {
+    color: var(--accent);
+  }
+  .is-open .feedback {
+    position: absolute;
+    z-index: 2;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 48px);
+    max-height: 90px;
+    padding: 8px 12px;
+    overflow: auto;
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow: 0 2px 8px #0002;
+  }
+
+  @media (max-width: 1280px) {
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 4px 8px;
+    }
+    .pagination {
+      flex-shrink: 0;
+    }
+    .zoom-controls {
+      flex-shrink: 0;
+      margin-inline: auto;
+    }
+    .toolbar .document-actions {
+      display: none;
+    }
+    .toolbar .more {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 24px;
+    }
+  }
+  @media (max-width: 600px) {
+    .desk {
+      padding: 12px;
+    }
+  }
+  @media (max-width: 480px) {
+    .toolbar .prev,
+    .toolbar .next {
+      display: none;
+    }
+    .page-number {
+      width: 56px;
+      margin: 0;
+    }
+    .page-count {
+      margin-inline: 4px;
+      font-size: 12px;
+    }
+    .appbar {
+      padding-inline: 10px;
+    }
+  }
+  @media (pointer: coarse) {
+    button,
+    .page-navigation button,
+    .page-number {
+      min-height: 44px;
+    }
+    .handle {
+      width: 22px;
+      height: 22px;
+    }
+    .nw,
+    .sw {
+      left: -12px;
+    }
+    .ne,
+    .se {
+      right: -12px;
+    }
+    .nw,
+    .ne {
+      top: -12px;
+    }
+    .sw,
+    .se {
+      bottom: -12px;
+    }
+  }
+</style>
