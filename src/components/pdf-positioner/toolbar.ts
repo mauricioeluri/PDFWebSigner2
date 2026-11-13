@@ -1,10 +1,14 @@
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3]
 
+export type CopyFormat = 'coordinates' | 'command'
+
+/** Dados exibidos na barra; a página visível pode diferir da página da área. */
 export interface ToolbarState {
   busy: boolean
   page: number
   pageCount: number
   selectionPage: number | null
+  /** Zoom real usado pelos botões +/- ao ajustar à largura. */
   effectiveZoom: number
 }
 
@@ -12,14 +16,17 @@ interface ToolbarActions {
   navigate: (page: number) => void
   zoom: (value: number) => void
   pin: (enabled: boolean) => void
-  copy: (command: boolean) => void
+  copy: (format: CopyFormat) => void
   clear: () => void
   close: () => void
   showSelection: () => void
   message: (text: string) => void
 }
 
-/** Liga os controles da barra às ações do editor e atualiza seus estados. */
+/**
+ * Liga os controles HTML às ações do editor. O módulo só cuida da interface;
+ * documento, seleção e cópia continuam no controlador.
+ */
 export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
   const find = <T extends HTMLElement>(selector: string) =>
     root.querySelector<T>(selector)!
@@ -46,7 +53,7 @@ export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
   const zoomHome = zoom.parentElement!
   const narrowScreen = window.matchMedia('(max-width: 600px)')
   const compactScreen = window.matchMedia('(max-width: 1280px)')
-  let manualZoom = false
+  let zoomChosenByUser = false
   let state: ToolbarState = {
     busy: false,
     page: 1,
@@ -69,6 +76,7 @@ export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
     else zoomHome.append(zoom)
   }
 
+  /** Reflete o estado do documento sem modificar a página ou a seleção. */
   function update(nextState: ToolbarState) {
     state = nextState
     const unavailable = state.busy || state.pageCount === 0
@@ -87,10 +95,12 @@ export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
     for (const button of [clear, copyPosition, copyCommand, selectionPage]) {
       button.disabled = unavailable || !hasSelection
     }
-    selectionPage.textContent = pin.checked
-      ? 'Última pág.'
-      : `Pág. ${state.selectionPage ?? ''}`
-    selectionPage.title = `Ir à área de assinatura na página ${state.selectionPage ?? ''}`
+    if (state.selectionPage !== null) {
+      selectionPage.textContent = pin.checked
+        ? 'Última pág.'
+        : `Pág. ${state.selectionPage}`
+      selectionPage.title = `Ir à área de assinatura na página ${state.selectionPage}`
+    }
     close.hidden = state.pageCount === 0 && !state.busy
   }
 
@@ -114,7 +124,7 @@ export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
         : level < state.effectiveZoom - 0.001
     )
     if (value === undefined) return
-    manualZoom = true
+    zoomChosenByUser = true
     zoom.value = String(value)
     actions.zoom(value)
   }
@@ -134,14 +144,14 @@ export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
   zoomOut.addEventListener('click', () => stepZoom(-1))
   zoomIn.addEventListener('click', () => stepZoom(1))
   zoom.addEventListener('change', () => {
-    manualZoom = true
+    zoomChosenByUser = true
     actions.zoom(Number(zoom.value))
   })
   pin.addEventListener('change', () => actions.pin(pin.checked))
   clear.addEventListener('click', actions.clear)
   close.addEventListener('click', actions.close)
-  copyPosition.addEventListener('click', () => actions.copy(false))
-  copyCommand.addEventListener('click', () => actions.copy(true))
+  copyPosition.addEventListener('click', () => actions.copy('coordinates'))
+  copyCommand.addEventListener('click', () => actions.copy('command'))
   selectionPage.addEventListener('click', actions.showSelection)
   options.addEventListener('click', (event) => {
     if (event.target instanceof HTMLElement && event.target.closest('button'))
@@ -150,7 +160,8 @@ export function createToolbar(root: HTMLElement, actions: ToolbarActions) {
   compactScreen.addEventListener('change', arrange)
   narrowScreen.addEventListener('change', () => {
     arrange()
-    if (!manualZoom) zoom.value = narrowScreen.matches ? '0' : '0.75'
+    // A largura da tela só escolhe o zoom inicial; uma escolha manual prevalece.
+    if (!zoomChosenByUser) zoom.value = narrowScreen.matches ? '0' : '0.75'
     actions.zoom(Number(zoom.value))
   })
   if (narrowScreen.matches) zoom.value = '0'
