@@ -8,6 +8,7 @@ import tseslint from 'typescript-eslint'
 export default defineConfig([
   globalIgnores([
     'versao-1/**',
+    'public/pdfjs/**',
     'node_modules/**',
     '.pnpm-store/**',
     '.astro/**',

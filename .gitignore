@@ -6,6 +6,11 @@ dist/
 
 # generated types
 .astro/
+/public/pdfjs/
+*.pdf
+*.p12
+*.pfx
+*.key
 
 # dependencies
 node_modules/

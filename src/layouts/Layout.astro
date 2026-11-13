@@ -1,23 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta
+      name="description"
+      content="Posicione um campo de assinatura em um PDF local e copie coordenadas ou um comando para o pyHanko."
+    />
+    <title>PDFWebSigner</title>
   </head>
   <body>
     <slot />
   </body>
 </html>
 
-<style>
+<style is:global>
+  * {
+    box-sizing: border-box;
+  }
+  [hidden] {
+    display: none !important;
+  }
   html,
   body {
     margin: 0;
     width: 100%;
     height: 100%;
+  }
+  body {
+    background: #f6f8f9;
+    font-family: system-ui, sans-serif;
+  }
+  main {
+    padding: clamp(12px, 4vw, 48px);
+  }
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #15191e;
+    }
   }
 </style>
