@@ -1,3 +1,11 @@
+/**
+ * Barra do editor.
+ *
+ * Liga a barra do editor às ações fornecidas pelo controlador. Atualiza estados
+ * dos controles e move os mesmos elementos para o menu em telas estreitas.
+ *
+ * @packageDocumentation
+ */
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3]
 
 export type CopyFormat = 'coordinates' | 'command'
